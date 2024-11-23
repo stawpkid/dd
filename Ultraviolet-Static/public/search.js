@@ -1,32 +1,26 @@
 "use strict";
 /**
- *
- * @param {string} input
- * @param {string} template Template for a search query.
- * @returns {string} Fully qualified URL
+ * Converts input into a fully qualified URL or a search query URL.
+ * @param {string} input - User input, could be a URL or search query.
+ * @param {string} template - Template for a search query (e.g., "https://google.com/search?q=%s").
+ * @returns {string} Fully qualified URL or a search query URL.
  */
 function search(input, template) {
   try {
-    // input is a valid URL:
-    // eg: https://example.com, https://example.com/test?q=param
+    // Input is a valid URL
     return new URL(input).toString();
   } catch (err) {
-    // input was not a valid URL
+    // Input is not a valid URL
   }
 
   try {
-    // input is a valid URL when http:// is added to the start:
-    // eg: example.com, https://example.com/test?q=param
+    // Input is a valid URL when prefixed with http://
     const url = new URL(`http://${input}`);
-    // only if the hostname has a TLD/subdomain
-    if (url.hostname.includes(".")) return url.toString();
+    if (url.hostname.includes(".")) return url.toString(); // Ensure it has a valid hostname
   } catch (err) {
-    // input was not valid URL
+    // Input is still not valid as a URL
   }
 
-  // input may have been a valid URL, however the hostname was invalid
-
-  // Attempts to convert the input to a fully qualified URL have failed
-  // Treat the input as a search query
+  // Treat input as a search query
   return template.replace("%s", encodeURIComponent(input));
 }
