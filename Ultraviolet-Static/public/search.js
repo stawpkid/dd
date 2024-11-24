@@ -45,7 +45,10 @@ async function processUrl(input) {
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
       await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
-    frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+
+    // Add a unique query parameter to ensure a new URL each time
+    const uniqueUrl = `${__uv$config.prefix + __uv$config.encodeUrl(url)}?unique=${Date.now()}`;
+    frame.src = uniqueUrl;
   } catch (err) {
     error.textContent = "Failed to process the URL.";
     errorCode.textContent = err.toString();
