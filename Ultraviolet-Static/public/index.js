@@ -31,8 +31,8 @@ function getQueryParam(param) {
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
     if (!proxiedUrl) {
-        error.textContent = "No URL provided in the query parameter.";
-        errorCode.textContent = "Please use the format ?url=<link>.";
+        error.textContent = "PRO TIP:";
+        errorCode.textContent = "You can use the format: ?url=<link> to ₱rox¥ links within the search bar";
         return;
     }
 
