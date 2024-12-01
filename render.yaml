@@ -10,7 +10,7 @@ services:
   # A web service for a JavaScript application
   - type: web
     runtime: node
-    name: mycatismyhippo
+    name: mycatismyhippo-web   # Unique service name
     repo: https://github.com/stawpkid/dd # Replace with your repo URL
     numInstances: 1   # Adjust instance number as needed
     region: oregon     # Change if you prefer a different region
@@ -20,16 +20,13 @@ services:
     startCommand: npm start  # Command to start the application
     autoDeploy: true  # Enable automatic deploys on every push
     maxShutdownDelaySeconds: 120 # Optional graceful shutdown configuration
-    domains: # Add your domains here
-      - example.com
-      - www.example.org
     envVars: # Add environment variables here
       - key: NODE_ENV
         value: production # Example environment variable
 
   # A static site service (optional)
   - type: web
-    name: mycatismyhippo
+    name: mycatismyhippo-static   # Unique service name for the static site
     runtime: static
     buildCommand: npm run build # Or any other build command you use
     staticPublishPath: ./build  # The output directory of your static site
@@ -37,9 +34,9 @@ services:
       generation: automatic # Enable service previews
     buildFilter:
       paths:
-        - src/**/*.js # Include JavaScript files for rebuild
+        - src/index.js # Include JavaScript files for rebuild
       ignoredPaths:
-        - src/**/*.test.js # Ignore test files from triggering rebuilds
+    
     headers:
       - path: /*
         name: X-Frame-Options
