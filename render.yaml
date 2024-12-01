@@ -1,0 +1,52 @@
+#################################################################
+# render.yaml Example for JavaScript Project                  #
+#################################################################
+
+previews:
+  generation: automatic # Enable preview environments
+
+# List all services *except* PostgreSQL databases here
+services:
+  # A web service for a JavaScript application
+  - type: web
+    runtime: node
+    name: mycatismyhippo
+    repo: https://github.com/stawpkid/dd # Replace with your repo URL
+    numInstances: 1   # Adjust instance number as needed
+    region: oregon     # Change if you prefer a different region
+    plan: standard     # Adjust plan as needed (e.g., starter, standard, pro)
+    branch: main       # Replace with your branch name (e.g., main, prod)
+    buildCommand: npm install # Your build command
+    startCommand: npm start  # Command to start the application
+    autoDeploy: true  # Enable automatic deploys on every push
+    maxShutdownDelaySeconds: 120 # Optional graceful shutdown configuration
+    domains: # Add your domains here
+      - example.com
+      - www.example.org
+    envVars: # Add environment variables here
+      - key: NODE_ENV
+        value: production # Example environment variable
+
+  # A static site service (optional)
+  - type: web
+    name: mycatismyhippo
+    runtime: static
+    buildCommand: npm run build # Or any other build command you use
+    staticPublishPath: ./build  # The output directory of your static site
+    previews:
+      generation: automatic # Enable service previews
+    buildFilter:
+      paths:
+        - src/**/*.js # Include JavaScript files for rebuild
+      ignoredPaths:
+        - src/**/*.test.js # Ignore test files from triggering rebuilds
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: sameorigin
+    routes:
+      - type: redirect
+        source: /old-path
+        destination: /new-path
+
+# No databases, Stripe, or other services in this example
