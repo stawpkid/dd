@@ -25,7 +25,7 @@
       class="flex-center logo-wrapper header-center"
     >
       <img class="logo" src="https://raw.githubusercontent.com/stawpkid/dd/refs/heads/main/Ultraviolet-Static/public/sigmav2.png" alt="Ultraviolet" />
-      <h1>$aturn ₱rox¥ | Number 1 prox</h1>
+      <h1>$aturn ₱rox¥ | Number 1 proxy</h1>
     </div>
     <div class="flex-center desc left-margin">
       <p>
@@ -53,5 +53,73 @@
       </div>
     </footer>
     <iframe style="display: none;" id="uv-frame"></iframe>
+    <script>
+      const searchInput = document.getElementById('uv-address');
+const suggestionsList = document.getElementById('uv-suggestions');
+
+// Style it quickly via JS (optional, or use CSS)
+suggestionsList.style.position = 'absolute';
+suggestionsList.style.background = '#111';
+suggestionsList.style.color = '#fff';
+suggestionsList.style.listStyle = 'none';
+suggestionsList.style.margin = '0';
+suggestionsList.style.padding = '0';
+suggestionsList.style.width = searchInput.offsetWidth + 'px';
+suggestionsList.style.maxHeight = '200px';
+suggestionsList.style.overflowY = 'auto';
+suggestionsList.style.border = '1px solid #333';
+suggestionsList.style.display = 'none';
+suggestionsList.style.zIndex = '1000';
+
+async function fetchSuggestions(query) {
+  if (!query) return [];
+  try {
+    const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    return data[1];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+async function showSuggestions(e) {
+  const query = e.target.value;
+  const suggestions = await fetchSuggestions(query);
+  
+  suggestionsList.innerHTML = '';
+  if (!suggestions.length) {
+    suggestionsList.style.display = 'none';
+    return;
+  }
+
+  suggestions.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    li.style.padding = '5px 10px';
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', () => {
+      searchInput.value = s;
+      suggestionsList.style.display = 'none';
+      document.getElementById('uv-form').submit();
+    });
+    suggestionsList.appendChild(li);
+  });
+
+  const rect = searchInput.getBoundingClientRect();
+  suggestionsList.style.top = rect.bottom + window.scrollY + 'px';
+  suggestionsList.style.left = rect.left + window.scrollX + 'px';
+  suggestionsList.style.display = 'block';
+}
+
+searchInput.addEventListener('input', showSuggestions);
+
+document.addEventListener('click', e => {
+  if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+    suggestionsList.style.display = 'none';
+  }
+});
+    </script>
   </body>
 </html>
+
