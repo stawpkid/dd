@@ -122,30 +122,58 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => (suggestionsList.innerHTML = ""), 200);
   });
 
-  async function submitProxySearch() {
-    try {
-      await registerSW();
-    } catch (err) {
-      error.textContent = "Failed to register service worker.";
-      errorCode.textContent = err.toString();
-      throw err;
-    }
-    document.querySelectorAll('.suggestions-list').forEach(el => {
-      el.style.display = 'none';
+async function waitForWebSocketReady(ws, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    if (ws.readyState === WebSocket.OPEN) return resolve();
+    
+    const timer = setTimeout(() => reject(new Error("WebSocket not ready")), timeout);
+    
+    ws.addEventListener("open", () => {
+      clearTimeout(timer);
+      resolve();
     });
-    const url = search(input.value, searchEngine.value);
-    let frame = document.getElementById("uv-frame");
-    frame.style.display = "block";
-    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-      await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
-    frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+
+    ws.addEventListener("error", (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
+}
+
+async function submitProxySearch() {
+  try {
+    await registerSW();
+  } catch (err) {
+    error.textContent = "Failed to register service worker.";
+    errorCode.textContent = err.toString();
+    throw err;
   }
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    submitProxySearch();
-  });
+  // hide suggestions
+  document.querySelectorAll(".suggestions-list").forEach(el => el.style.display = "none");
+
+  const url = search(input.value, searchEngine.value);
+  let frame = document.getElementById("uv-frame");
+  frame.style.display = "block";
+  let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+
+  // ensure WebSocket is ready before sending
+  const ws = connection._ws; // internal WebSocket
+  if (ws && ws.readyState !== WebSocket.OPEN) {
+    await waitForWebSocketReady(ws);
+  }
+
+  if (await connection.getTransport() !== "/epoxy/index.mjs") {
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+  }
+
+  frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  submitProxySearch();
 });
+
+
 
