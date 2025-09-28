@@ -20,27 +20,11 @@ const error = document.getElementById("uv-error");
  */
 const errorCode = document.getElementById("uv-error-code");
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-    throttle: 0.4, c: 'w', ads: 0
-});
+
 // Helper to get query parameters
 function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
-}
-async function waitForWebSocketOpen(socket, timeout = 5000) {
-    if (socket.readyState === WebSocket.OPEN) return;
-
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            reject(new Error("WebSocket failed to open within timeout"));
-        }, timeout);
-
-        socket.addEventListener("open", () => {
-            clearTimeout(timer);
-            resolve();
-        });
-    });
 }
 
 // Function to set up the iframe based on query parameter
@@ -74,7 +58,6 @@ form.addEventListener("submit", async (event) => {
 
     try {
         await registerSW();
-        await waitForWebSocketOpen();
     } catch (err) {
         error.textContent = "Failed to register service worker.";
         errorCode.textContent = err.toString();
@@ -92,11 +75,11 @@ form.addEventListener("submit", async (event) => {
     frame.src = "/loading.html";
     setTimeout(() => {
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-        _client.start();
     }, 2000);
 });
 
 // Initialize proxy on page load if a URL is provided in the query
+window.addEventListener("load", initializeProxy);
 window.addEventListener("load", initializeProxy);
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded");
@@ -158,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Submitting proxy search for:", input.value);
         try {
             await registerSW(); // make sure service worker is registered
-            await waitForWebSocketOpen();
             console.log("Service worker registered for proxy search");
         } catch (err) {
             error.textContent = "Failed to register service worker.";
@@ -182,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
         frame.src = "/loading.html";
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-            _client.start();
         }, 2000);
         console.log("Iframe src updated for proxy search:", frame.src);
     }
@@ -193,9 +174,3 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
-
-
-
-
-
-
