@@ -20,16 +20,7 @@ const error = document.getElementById("uv-error");
  */
 const errorCode = document.getElementById("uv-error-code");
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-async function waitForWorker(conn, timeout = 3000) {
-    const start = Date.now();
-    while (Date.now() - start < timeout) {
-        try {
-            if (await conn.getTransport()) return true;
-        } catch {}
-        await new Promise(r => setTimeout(r, 100)); // retry every 100ms
-    }
-    throw new Error("BareMux worker failed to initialize");
-}
+
 async function ensureBareTransport(conn, wispUrl, retryDelay = 200, maxRetries = 10) {
     let attempts = 0;
 
@@ -53,6 +44,22 @@ async function ensureBareTransport(conn, wispUrl, retryDelay = 200, maxRetries =
     }
 
     throw new Error("Failed to set up BareTransport after retries");
+}
+async function waitForWorker(conn, timeout = 10000, retryDelay = 200) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+        try {
+            const transport = await conn.getTransport();
+            if (transport) {
+                console.log("BareMux worker ready!");
+                return true;
+            }
+        } catch (err) {
+            // Worker not ready yet, ignore and retry
+        }
+        await new Promise(res => setTimeout(res, retryDelay));
+    }
+    throw new Error("BareMux worker failed to initialize after timeout");
 }
 
 // Helper to get query parameters
@@ -224,6 +231,7 @@ await ensureBareTransport(connection, wispUrl);
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
