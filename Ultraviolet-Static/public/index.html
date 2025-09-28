@@ -54,7 +54,7 @@
     </footer>
     <iframe style="display: none;" id="uv-frame"></iframe>
     <script>
-      const searchInput = document.getElementById('uv-address');
+      const SearchAddress = document.getElementById('uv-address');
 const suggestionsList = document.getElementById('uv-suggestions');
 
 // Style it quickly via JS (optional, or use CSS)
@@ -64,7 +64,7 @@ suggestionsList.style.color = '#fff';
 suggestionsList.style.listStyle = 'none';
 suggestionsList.style.margin = '0';
 suggestionsList.style.padding = '0';
-suggestionsList.style.width = searchInput.offsetWidth + 'px';
+suggestionsList.style.width = SearchAddress.offsetWidth + 'px';
 suggestionsList.style.maxHeight = '200px';
 suggestionsList.style.overflowY = 'auto';
 suggestionsList.style.border = '1px solid #333';
@@ -99,27 +99,28 @@ async function showSuggestions(e) {
     li.style.padding = '5px 10px';
     li.style.cursor = 'pointer';
     li.addEventListener('click', () => {
-      searchInput.value = s;
+      SearchAddress.value = s;
       suggestionsList.style.display = 'none';
       document.getElementById('uv-form').submit();
     });
     suggestionsList.appendChild(li);
   });
 
-  const rect = searchInput.getBoundingClientRect();
+  const rect = SearchAddress.getBoundingClientRect();
   suggestionsList.style.top = rect.bottom + window.scrollY + 'px';
   suggestionsList.style.left = rect.left + window.scrollX + 'px';
   suggestionsList.style.display = 'block';
 }
 
-searchInput.addEventListener('input', showSuggestions);
+SearchAddress.addEventListener('input', showSuggestions);
 
 document.addEventListener('click', e => {
-  if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+  if (!SearchAddress.contains(e.target) && !suggestionsList.contains(e.target)) {
     suggestionsList.style.display = 'none';
   }
 });
     </script>
   </body>
 </html>
+
 
