@@ -28,7 +28,7 @@ function getQueryParam(param) {
 }
 
 
-async function ensureTransportReady() {
+async function ensureTransportReady(timeout = 5000) {
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
@@ -38,11 +38,18 @@ async function ensureTransportReady() {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
 
+    const start = Date.now();
     while (!connection._ws) {
+        if (Date.now() - start > timeout) {
+            throw new Error("WebSocket never initialized (_ws is undefined)");
+        }
         await new Promise(r => setTimeout(r, 50));
     }
 
     while (connection._ws.readyState !== WebSocket.OPEN) {
+        if (Date.now() - start > timeout) {
+            throw new Error("WebSocket never opened (readyState != OPEN)");
+        }
         await new Promise(r => setTimeout(r, 50));
     }
 
