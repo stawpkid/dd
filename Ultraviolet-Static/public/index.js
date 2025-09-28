@@ -28,6 +28,7 @@ function getQueryParam(param) {
 }
 async function ensureTransportReady() {
   let ws = connection._ws;
+  setInterval(() => console.log("connection._ws =", connection._ws), 500);
 
   console.log("[DEBUG] Starting ensureTransportReady...");
 
@@ -244,6 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
