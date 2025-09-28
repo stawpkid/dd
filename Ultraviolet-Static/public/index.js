@@ -27,6 +27,7 @@ function getQueryParam(param) {
     return params.get(param);
 }
 async function ensureTransportReady() {
+    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     frame.src = "/loading.html"
@@ -49,10 +50,7 @@ async function initializeProxy() {
     frame.style.display = "block";
 
     try {
-        let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        if (await connection.getTransport() !== "/epoxy/index.mjs") {
-            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-        }
+        await ensureTransportReady();
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(proxiedUrl);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
@@ -212,6 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
