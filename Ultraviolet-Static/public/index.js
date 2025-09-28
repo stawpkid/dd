@@ -40,14 +40,15 @@ async function initializeProxy() {
     frame.style.display = "block";
 
     try {
-        setTimeout(() => {
-            frame.src = "/loading.html";
-        }, 2000);
+
         let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
         if (await connection.getTransport() !== "/epoxy/index.mjs") {
             await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
         }
-        frame.src = __uv$config.prefix + __uv$config.encodeUrl(proxiedUrl);
+        frame.src = "/loading.html";
+        setTimeout(() => {
+            frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+        }, 2000);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
         errorCode.textContent = err.toString();
@@ -71,15 +72,15 @@ form.addEventListener("submit", async (event) => {
 
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
-    setTimeout(() => {
-        frame.src = "/loading.html";
-    }, 2000);
 
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
-    frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+    frame.src = "/loading.html";
+    setTimeout(() => {
+        frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+    }, 2000);
 });
 
 // Initialize proxy on page load if a URL is provided in the query
@@ -160,15 +161,15 @@ document.addEventListener("DOMContentLoaded", () => {
         let frame = document.getElementById("uv-frame");
         frame.style.display = "block";
 
-    setTimeout(() => {
-        frame.src = "/loading.html";
-    }, 2000);
 
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
-        frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+        frame.src = "/loading.html";
+        setTimeout(() => {
+            frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+        }, 2000);
         console.log("Iframe src updated for proxy search:", frame.src);
     }
 
@@ -178,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
