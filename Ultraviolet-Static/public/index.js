@@ -85,7 +85,7 @@ form.addEventListener("submit", async (event) => {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
     frame.src = "/loading.html";
-    console.log(__uv$config.prefix + __uv$config.encodeUrl(url);)
+    console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
 
     setTimeout(() => {
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
@@ -197,6 +197,7 @@ console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
