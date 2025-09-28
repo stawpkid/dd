@@ -21,48 +21,10 @@ const error = document.getElementById("uv-error");
 const errorCode = document.getElementById("uv-error-code");
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 
-// HELPER DEBUGGING FUNCTION
-function logDebug(...args) {
-    console.log("[DEBUG]", ...args);
-}
-
 // Helper to get query parameters
 function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
-    const value = params.get(param);
-    logDebug("Query param", param, "=", value);
-    return value;
-}
-
-async function ensureTransportReady(timeout = 5000) {
-    const start = Date.now();
-    let ws = connection._ws;
-
-    logDebug("Waiting for WebSocket existence...");
-    while (!ws) {
-        if (Date.now() - start > timeout) {
-            throw new Error("WebSocket never initialized (connection._ws is null)");
-        }
-        await new Promise(r => setTimeout(r, 50));
-        ws = connection._ws;
-    }
-    logDebug("WebSocket exists:", ws);
-
-    logDebug("Waiting for WebSocket to open...");
-    while (ws.readyState !== WebSocket.OPEN) {
-        logDebug("Current ws.readyState:", ws.readyState);
-        if (Date.now() - start > timeout) {
-            throw new Error("WebSocket stuck in non-OPEN state: " + ws.readyState);
-        }
-        await new Promise(r => setTimeout(r, 50));
-    }
-    logDebug("WebSocket OPEN!");
-
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        logDebug("Setting transport to /epoxy/index.mjs...");
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
-    }
-    logDebug("Transport ready.");
+    return params.get(param);
 }
 
 // Function to set up the iframe based on query parameter
@@ -71,7 +33,6 @@ async function initializeProxy() {
     if (!proxiedUrl) {
         error.textContent = "PRO TIP:";
         errorCode.textContent = "You can use the format: ?url=<link> to ₱rox¥ links within the search bar";
-        logDebug("No URL query parameter provided");
         return;
     }
 
@@ -80,20 +41,43 @@ async function initializeProxy() {
 
     try {
         let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        logDebug("Checking transport before iframe load...");
         if (await connection.getTransport() !== "/epoxy/index.mjs") {
-            logDebug("Transport mismatch, setting transport...");
             await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
         }
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(proxiedUrl);
-        logDebug("Iframe src set to:", frame.src);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
         errorCode.textContent = err.toString();
-        console.error("Proxy init error:", err);
         throw err;
     }
 }
+
+// Event listener for manual form submission
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    try {
+        await registerSW();
+    } catch (err) {
+        error.textContent = "Failed to register service worker.";
+        errorCode.textContent = err.toString();
+        throw err;
+    }
+
+    const url = search(address.value, searchEngine.value);
+
+    let frame = document.getElementById("uv-frame");
+    frame.style.display = "block";
+    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+    if (await connection.getTransport() !== "/epoxy/index.mjs") {
+        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
+    frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+});
+
+// Initialize proxy on page load if a URL is provided in the query
+window.addEventListener("load", initializeProxy);
+
 
 // Event listener for manual form submission
 form.addEventListener("submit", async (event) => {
