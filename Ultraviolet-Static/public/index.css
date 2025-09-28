@@ -193,6 +193,8 @@ footer a:hover {
   background: #111;
   color: #fff;
   position: absolute;
+  top: 100%;   /* directly below input */
+  left: 0;
   z-index: 1000;
 }
 .suggestions-list li {
@@ -202,3 +204,4 @@ footer a:hover {
 .suggestions-list li:hover {
   background: #222;
 }
+
