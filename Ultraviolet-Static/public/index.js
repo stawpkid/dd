@@ -26,7 +26,6 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
-
 async function waitForWebSocketReady(ws, timeout = 5000) {
   return new Promise((resolve, reject) => {
     if (ws.readyState === WebSocket.OPEN) return resolve();
@@ -44,32 +43,27 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
     });
   });
 }
-async function waitForWS(connection, retryDelay = 50) {
-  // keep retrying indefinitely until ws exists
-  while (!connection._ws) {
-    await new Promise(r => setTimeout(r, retryDelay));
-  }
-  return connection._ws;
-}
-
 async function ensureTransportReady() {
-//  const frame = document.getElementById("uv-frame");
-//  frame.style.display = "block";
-//  frame.src = "/loading.html";
-
-  const ws = await waitForWS(connection); // now will wait until _ws exists
+  let ws = connection._ws;
+  //let frame = document.getElementById("uv-frame");
+  //frame.style.display = "block";
+  //frame.src = "/loading.html"
+  // wait until websocket exists
+  while (!ws) {
+    await new Promise(r => setTimeout(r, 50));
+    ws = connection._ws;
+  }
 
   // wait until websocket is open
-  await waitForWebSocketReady(ws);
+  while (ws.readyState !== WebSocket.OPEN) {
+    await new Promise(r => setTimeout(r, 50));
+  }
 
-  // now safe to set transport
-  const transport = await connection.getTransport();
-  if (transport !== "/epoxy/index.mjs") {
-    const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+  // now safe to call getTransport and setTransport
+  if (await connection.getTransport() !== "/epoxy/index.mjs") {
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
   }
 }
-
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -196,9 +190,6 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
-
-
-
 
 
 
