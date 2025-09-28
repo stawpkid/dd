@@ -182,3 +182,23 @@ footer a:hover {
 .credit input:checked ~ pre {
   display: block;
 }
+
+.suggestions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 600px;
+  border: 1px solid #333;
+  background: #111;
+  color: #fff;
+  position: absolute;
+  z-index: 1000;
+}
+.suggestions-list li {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.suggestions-list li:hover {
+  background: #222;
+}
