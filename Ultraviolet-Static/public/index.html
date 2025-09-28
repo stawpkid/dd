@@ -56,34 +56,32 @@
     </footer>
     <iframe style="display: none;" id="uv-frame"></iframe>
     <script>
-      const SearchAddress = document.getElementById('uv-address');
-const suggestionsList = document.getElementById('uv-suggestions');
+const searchInput = document.getElementById("uv-address");
+const suggestionsList = document.getElementById("uv-suggestions");
+const form = document.getElementById("uv-form");
+const searchEngine = document.getElementById("uv-search-engine");
+const frame = document.getElementById("uv-frame");
+const error = document.getElementById("uv-error");
+const errorCode = document.getElementById("uv-error-code");
 
-// Style it quickly via JS (optional, or use CSS)
-suggestionsList.style.position = 'absolute';
-suggestionsList.style.background = '#111';
-suggestionsList.style.color = '#fff';
-suggestionsList.style.listStyle = 'none';
-suggestionsList.style.margin = '0';
-suggestionsList.style.padding = '0';
-suggestionsList.style.width = SearchAddress.offsetWidth + 'px';
-suggestionsList.style.maxHeight = '200px';
-suggestionsList.style.overflowY = 'auto';
-suggestionsList.style.border = '1px solid #333';
-suggestionsList.style.display = 'none';
-suggestionsList.style.zIndex = '1000';
-
+// Fetch suggestions via your Cloudflare Worker or any proxy endpoint
 async function fetchSuggestions(query) {
-  if (!query) return []
-  const res = await fetch(`https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=${encodeURIComponent(query)}`)
-  const data = await res.json()
-  return data[1] // array of suggestions
+  if (!query) return [];
+  try {
+    const res = await fetch(`https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    return data[1]; // Array of suggestions from Google
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
 }
 
+// Show suggestions in dropdown
 async function showSuggestions(e) {
   const query = e.target.value;
   const suggestions = await fetchSuggestions(query);
-  
+
   suggestionsList.innerHTML = '';
   if (!suggestions.length) {
     suggestionsList.style.display = 'none';
@@ -93,32 +91,35 @@ async function showSuggestions(e) {
   suggestions.forEach(s => {
     const li = document.createElement('li');
     li.textContent = s;
-    li.style.padding = '5px 10px';
     li.style.cursor = 'pointer';
-    li.addEventListener('click', () => {
-      SearchAddress.value = s;
+    li.style.padding = '5px 10px';
+    li.addEventListener('click', async () => {
+      searchInput.value = s;
       suggestionsList.style.display = 'none';
-      document.getElementById('uv-form').submit();
+      await processUrl(s); // ✅ Route through proxy
     });
     suggestionsList.appendChild(li);
   });
 
-  const rect = SearchAddress.getBoundingClientRect();
+  const rect = searchInput.getBoundingClientRect();
   suggestionsList.style.top = rect.bottom + window.scrollY + 'px';
   suggestionsList.style.left = rect.left + window.scrollX + 'px';
+  suggestionsList.style.width = rect.width + 'px';
   suggestionsList.style.display = 'block';
 }
 
-SearchAddress.addEventListener('input', showSuggestions);
-
+// Hide suggestions when clicking outside
 document.addEventListener('click', e => {
-  if (!SearchAddress.contains(e.target) && !suggestionsList.contains(e.target)) {
+  if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
     suggestionsList.style.display = 'none';
   }
 });
+
+searchInput.addEventListener('input', showSuggestions);
     </script>
   </body>
 </html>
+
 
 
 
