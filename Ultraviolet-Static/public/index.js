@@ -27,39 +27,6 @@ function getQueryParam(param) {
     return params.get(param);
 }
 
-
-async function ensureTransportReady(timeout = 5000) {
-    const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    const frame = document.getElementById("uv-frame");
-    frame.style.display = "block";
-    frame.src = "/loading.html";
-
-    // Set transport if needed
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
-
-    const start = Date.now();
-    // Wait for _ws to exist
-    while (!connection._ws) {
-        if (Date.now() - start > timeout) {
-            throw new Error("WebSocket never initialized (_ws is undefined)");
-        }
-        await new Promise(r => setTimeout(r, 50));
-    }
-
-    // Wait for it to open
-    while (connection._ws.readyState !== WebSocket.OPEN) {
-        if (Date.now() - start > timeout) {
-            throw new Error("WebSocket never opened (readyState != OPEN)");
-        }
-        await new Promise(r => setTimeout(r, 50));
-    }
-
-    console.log("[DEBUG] WebSocket is ready!");
-}
-
-
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -73,7 +40,10 @@ async function initializeProxy() {
     frame.style.display = "block";
 
     try {
-        await ensureTransportReady();
+        let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        if (await connection.getTransport() !== "/epoxy/index.mjs") {
+            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+        }
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(proxiedUrl);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
@@ -99,51 +69,14 @@ form.addEventListener("submit", async (event) => {
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-
-    await ensureTransportReady();
+    if (await connection.getTransport() !== "/epoxy/index.mjs") {
+        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
     frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
 
 // Initialize proxy on page load if a URL is provided in the query
 window.addEventListener("load", initializeProxy);
-
-
-// Event listener for manual form submission
-form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    console.log("Form submitted manually");
-
-    try {
-        await registerSW();
-        console.log("Service worker registered successfully");
-    } catch (err) {
-        error.textContent = "Failed to register service worker.";
-        errorCode.textContent = err.toString();
-        console.error("SW registration failed:", err);
-        throw err;
-    }
-
-    const url = search(address.value, searchEngine.value);
-    console.log("Searching for URL:", url);
-
-    let frame = document.getElementById("uv-frame");
-    frame.style.display = "block";
-
-    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-
-    console.log("Ensuring transport is ready before iframe load...");
-    await ensureTransportReady();
-
-    frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-    console.log("Iframe src updated for manual submit:", frame.src);
-});
-
-window.addEventListener("load", () => {
-    console.log("Window loaded, initializing proxy...");
-    initializeProxy().catch(err => console.error("Initialize proxy error:", err));
-});
-
-
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded");
     const input = document.getElementById("uv-address");
@@ -220,9 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
         let frame = document.getElementById("uv-frame");
         frame.style.display = "block";
 
-        await ensureTransportReady();
-        console.log("Transport ensured ready for proxy search");
 
+    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+    if (await connection.getTransport() !== "/epoxy/index.mjs") {
+        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
         console.log("Iframe src updated for proxy search:", frame.src);
     }
@@ -233,13 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
-
-
-
-
-
-
-
 
 
 
