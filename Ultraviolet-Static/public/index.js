@@ -26,7 +26,27 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
+async function ensureTransportReady() {
+  let ws = connection._ws;
+  let frame = document.getElementById("uv-frame");
+  frame.style.display = "block";
+  frame.src = "/loading.html"
+  // wait until websocket exists
+  while (!ws) {
+    await new Promise(r => setTimeout(r, 50));
+    ws = connection._ws;
+  }
 
+  // wait until websocket is open
+  while (ws.readyState !== WebSocket.OPEN) {
+    await new Promise(r => setTimeout(r, 50));
+  }
+
+  // now safe to call getTransport and setTransport
+  if (await connection.getTransport() !== "/epoxy/index.mjs") {
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+  }
+}
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -141,27 +161,7 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
     });
   });
 }
-async function ensureTransportReady() {
-  let ws = connection._ws;
-  let frame = document.getElementById("uv-frame");
-  frame.style.display = "block";
-  frame.src = "/loading.html"
-  // wait until websocket exists
-  while (!ws) {
-    await new Promise(r => setTimeout(r, 50));
-    ws = connection._ws;
-  }
 
-  // wait until websocket is open
-  while (ws.readyState !== WebSocket.OPEN) {
-    await new Promise(r => setTimeout(r, 50));
-  }
-
-  // now safe to call getTransport and setTransport
-  if (await connection.getTransport() !== "/epoxy/index.mjs") {
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
-  }
-}
 
 async function submitProxySearch() {
   try {
@@ -189,6 +189,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
