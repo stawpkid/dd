@@ -72,6 +72,8 @@ form.addEventListener("submit", async (event) => {
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
+    await ensureTransportReady();  // <-- wait safely before sending
+
     frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
 
@@ -185,6 +187,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
