@@ -26,27 +26,41 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
-async function ensureTransportReady() {
-  let ws = connection._ws;
-  let frame = document.getElementById("uv-frame");
-  frame.style.display = "block";
-  frame.src = "/loading.html"
-  // wait until websocket exists
-  while (!ws) {
-    await new Promise(r => setTimeout(r, 50));
-    ws = connection._ws;
-  }
+async function waitForWebSocketReady(ws, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    if (ws.readyState === WebSocket.OPEN) return resolve();
+    
+    const timer = setTimeout(() => reject(new Error("WebSocket not ready")), timeout);
+    
+    ws.addEventListener("open", () => {
+      clearTimeout(timer);
+      resolve();
+    });
 
-  // wait until websocket is open
-  while (ws.readyState !== WebSocket.OPEN) {
-    await new Promise(r => setTimeout(r, 50));
-  }
-
-  // now safe to call getTransport and setTransport
-  if (await connection.getTransport() !== "/epoxy/index.mjs") {
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
-  }
+    ws.addEventListener("error", (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
 }
+async function ensureTransportReady() {
+    const frame = document.getElementById("uv-frame");
+    frame.style.display = "block";
+    frame.src = "/loading.html";
+
+    const ws = await connection.getOrWaitForWS(); // We'll define this below
+
+    // wait until websocket is open
+    await waitForWebSocketReady(ws);
+
+    // now safe to set transport
+    const transport = await connection.getTransport();
+    if (transport !== "/epoxy/index.mjs") {
+        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
+}
+
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -144,23 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => (suggestionsList.innerHTML = ""), 200);
   });
 
-async function waitForWebSocketReady(ws, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    if (ws.readyState === WebSocket.OPEN) return resolve();
-    
-    const timer = setTimeout(() => reject(new Error("WebSocket not ready")), timeout);
-    
-    ws.addEventListener("open", () => {
-      clearTimeout(timer);
-      resolve();
-    });
 
-    ws.addEventListener("error", (err) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-  });
-}
 
 
 async function submitProxySearch() {
@@ -189,6 +187,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
