@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loading...</title>
-<script src="https://fpyf8.com/88/tag.min.js" data-zone="174288" async data-cfasync="false"></script>
+<script>
+const script = document.createElement('script');
+script.src = "tag.min.js";
+script.async = true;
+script.setAttribute('data-zone', '174288');
+script.setAttribute('data-cfasync', 'false');
+
+document.head.appendChild(script);
+
+</script>
 <style>
   body {
     margin: 0;
