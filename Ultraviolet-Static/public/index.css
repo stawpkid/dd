@@ -205,3 +205,9 @@ footer a:hover {
   background: #222;
 }
 
+.input-wrapper {
+  position: relative; /* <-- this makes .suggestions-list anchor to it */
+  display: inline-block;
+  width: 350px; /* match your #uv-address width */
+}
+
