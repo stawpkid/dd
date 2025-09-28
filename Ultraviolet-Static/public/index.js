@@ -28,22 +28,41 @@ function getQueryParam(param) {
 }
 async function ensureTransportReady() {
   let ws = connection._ws;
+
+  console.log("[DEBUG] Starting ensureTransportReady...");
+
   // wait until websocket exists
   while (!ws) {
+    console.log("[DEBUG] Waiting for WebSocket to initialize...");
     await new Promise(r => setTimeout(r, 50));
     ws = connection._ws;
   }
+  console.log("[DEBUG] WebSocket exists:", ws);
 
   // wait until websocket is open
   while (ws.readyState !== WebSocket.OPEN) {
+    console.log("[DEBUG] WebSocket readyState:", ws.readyState, "(waiting for OPEN)");
     await new Promise(r => setTimeout(r, 50));
   }
+  console.log("[DEBUG] WebSocket is open!");
 
   // now safe to call getTransport and setTransport
-  if (await connection.getTransport() !== "/epoxy/index.mjs") {
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+  const currentTransport = await connection.getTransport();
+  console.log("[DEBUG] Current transport:", currentTransport);
+
+  if (currentTransport !== "/epoxy/index.mjs") {
+    console.log("[DEBUG] Setting transport to /epoxy/index.mjs...");
+    await connection.setTransport("/epoxy/index.mjs", [{
+      wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/"
+    }]);
+    console.log("[DEBUG] Transport set successfully!");
+  } else {
+    console.log("[DEBUG] Transport already set correctly.");
   }
+
+  console.log("[DEBUG] ensureTransportReady finished.");
 }
+
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -225,5 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
