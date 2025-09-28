@@ -26,6 +26,7 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
+
 async function waitForWebSocketReady(ws, timeout = 5000) {
   return new Promise((resolve, reject) => {
     if (ws.readyState === WebSocket.OPEN) return resolve();
@@ -43,12 +44,23 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
     });
   });
 }
+async function waitForWS(connection, timeout = 5000) {
+    const start = Date.now();
+    while (!connection._ws) {
+        if (Date.now() - start > timeout) throw new Error("WebSocket not initialized");
+        await new Promise(r => setTimeout(r, 50));
+    }
+    return connection._ws;
+}
+
+
+
 async function ensureTransportReady() {
     const frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     frame.src = "/loading.html";
 
-    const ws = await connection.getOrWaitForWS(); // We'll define this below
+    const ws = await waitForWS(connection); // <-- use your helper, pass connection
 
     // wait until websocket is open
     await waitForWebSocketReady(ws);
@@ -187,6 +199,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
