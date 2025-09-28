@@ -45,9 +45,7 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
 }
 async function ensureTransportReady() {
   let ws = connection._ws;
-  //let frame = document.getElementById("uv-frame");
-  //frame.style.display = "block";
-  //frame.src = "/loading.html"
+
   // wait until websocket exists
   while (!ws) {
     await new Promise(r => setTimeout(r, 50));
@@ -64,6 +62,7 @@ async function ensureTransportReady() {
     await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
   }
 }
+
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -190,6 +189,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
