@@ -28,6 +28,20 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
+async function waitForWebSocketOpen(socket, timeout = 5000) {
+    if (socket.readyState === WebSocket.OPEN) return;
+
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error("WebSocket failed to open within timeout"));
+        }, timeout);
+
+        socket.addEventListener("open", () => {
+            clearTimeout(timer);
+            resolve();
+        });
+    });
+}
 
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
@@ -60,6 +74,7 @@ form.addEventListener("submit", async (event) => {
 
     try {
         await registerSW();
+        await waitForWebSocketOpen();
     } catch (err) {
         error.textContent = "Failed to register service worker.";
         errorCode.textContent = err.toString();
@@ -142,8 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function submitProxySearch() {
         console.log("Submitting proxy search for:", input.value);
         try {
-        await registerSW(); // make sure service worker is registered
-
+            await registerSW(); // make sure service worker is registered
+            await waitForWebSocketOpen();
             console.log("Service worker registered for proxy search");
         } catch (err) {
             error.textContent = "Failed to register service worker.";
@@ -178,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
