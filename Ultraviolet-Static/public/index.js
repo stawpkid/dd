@@ -20,6 +20,16 @@ const error = document.getElementById("uv-error");
  */
 const errorCode = document.getElementById("uv-error-code");
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+async function waitForWorker(conn, timeout = 3000) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+        try {
+            if (await conn.getTransport()) return true;
+        } catch {}
+        await new Promise(r => setTimeout(r, 100)); // retry every 100ms
+    }
+    throw new Error("BareMux worker failed to initialize");
+}
 
 // Helper to get query parameters
 function getQueryParam(param) {
@@ -68,6 +78,7 @@ form.addEventListener("submit", async (event) => {
 
     try {
         await registerSW();
+        await waitForWorker();
     } catch (err) {
         error.textContent = "Failed to register service worker.";
         errorCode.textContent = err.toString();
@@ -152,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Submitting proxy search for:", input.value);
         try {
             await registerSW();
+            await waitForWorker();
             console.log("Service worker registered for proxy search");
         } catch (err) {
             error.textContent = "Failed to register service worker.";
@@ -187,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
