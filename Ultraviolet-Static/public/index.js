@@ -29,7 +29,7 @@ function getQueryParam(param) {
 async function ensureTransportReady() {
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
-    frame.src = "/loading"
+    frame.src = "/loading.html"
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
@@ -212,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
