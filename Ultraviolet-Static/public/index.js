@@ -30,6 +30,30 @@ async function waitForWorker(conn, timeout = 3000) {
     }
     throw new Error("BareMux worker failed to initialize");
 }
+async function ensureBareTransport(conn, wispUrl, retryDelay = 200, maxRetries = 10) {
+    let attempts = 0;
+
+    while (attempts < maxRetries) {
+        try {
+            const transport = await conn.getTransport();
+            
+            if (!transport) {
+                await conn.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+                console.log("Transport set!");
+            } else {
+                console.log("Transport already exists");
+            }
+
+            return conn; // ready to use
+        } catch (err) {
+            attempts++;
+            console.warn(`Transport setup failed (attempt ${attempts}):`, err);
+            await new Promise(r => setTimeout(r, retryDelay));
+        }
+    }
+
+    throw new Error("Failed to set up BareTransport after retries");
+}
 
 // Helper to get query parameters
 function getQueryParam(param) {
@@ -54,10 +78,9 @@ async function initializeProxy() {
 
     try {
 
-        let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        if (await connection.getTransport() !== "/epoxy/index.mjs") {
-            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-        }
+let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+await ensureBareTransport(connection, wispUrl);
+
 console.log(__uv$config.prefix + __uv$config.encodeUrl(url));
 
         frame.src = "/loading.html";
@@ -90,10 +113,9 @@ form.addEventListener("submit", async (event) => {
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
 
-    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
+let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+await ensureBareTransport(connection, wispUrl);
+
         frame.src = "/loading.html";
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
@@ -181,10 +203,9 @@ document.addEventListener("DOMContentLoaded", () => {
         frame.style.display = "block";
 
 
-    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
+let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+await ensureBareTransport(connection, wispUrl);
+
         frame.src = "/loading.html";
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
@@ -199,6 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
