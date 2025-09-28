@@ -24,6 +24,7 @@ body {
   margin-top: 10%;
 }
 p {
+  position: relative; /* <-- this makes .suggestions-list anchor to it */
   align-items: center;
   color: white;
 }
@@ -214,6 +215,7 @@ footer a:hover {
   display: inline-block;
   width: 350px; /* match your #uv-address width */
 }
+
 
 
 
