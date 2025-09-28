@@ -24,13 +24,15 @@
       title="$aturn ₱rox¥ Logo"
       class="flex-center logo-wrapper header-center"
     >
-      <img class="logo" src="https://raw.githubusercontent.com/stawpkid/dd/refs/heads/main/Ultraviolet-Static/public/sigmav2.png" alt="Ultraviolet" />
+      <img
+        class="logo"
+        src="https://raw.githubusercontent.com/stawpkid/dd/refs/heads/main/Ultraviolet-Static/public/sigmav2.png"
+        alt="Ultraviolet"
+      />
       <h1>$aturn ₱rox¥ | Number 1 proxy</h1>
     </div>
     <div class="flex-center desc left-margin">
-      <p>
-        Made by blitzedzz
-      </p>
+      <p>Made by blitzedzz</p>
     </div>
 
     <form id="uv-form" class="flex-center">
@@ -48,96 +50,88 @@
       <pre id="uv-error-code"></pre>
     </div>
     <footer>
-        <h1>MADE BY BLITZEDZZ</h1>
-      </div>
+      <h1>MADE BY BLITZEDZZ</h1>
       <div>
         <h1>MADE BY BLITZEDZZ</h1>
       </div>
     </footer>
     <iframe style="display: none;" id="uv-frame"></iframe>
+
     <script>
-const searchInput = document.getElementById("uv-address");
-const suggestionsList = document.getElementById("uv-suggestions");
-const form = document.getElementById("uv-form");
-const searchEngine = document.getElementById("uv-search-engine");
-const frame = document.getElementById("uv-frame");
-const error = document.getElementById("uv-error");
-const errorCode = document.getElementById("uv-error-code");
+      const searchInput = document.getElementById("uv-address");
+      const suggestionsList = document.getElementById("uv-suggestions");
 
-// Fetch suggestions via your Cloudflare Worker or any proxy endpoint
-async function fetchSuggestions(query) {
-  if (!query) return [];
-  try {
-    const res = await fetch(`https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    return data[1]; // Array of suggestions from Google
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-async function processUrl(input) {
-  const template = searchEngine.value || "https://www.google.com/search?q=%s";
-  const url = search(input, template);
-  frame.style.display = "block";
+      // Cloudflare Worker suggestion proxy
+      async function fetchSuggestions(query) {
+        if (!query) return [];
+        try {
+          const res = await fetch(
+            `https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=${encodeURIComponent(
+              query
+            )}`
+          );
+          const data = await res.json();
+          return data[1];
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
 
-  try {
-    const uniqueUrl = `${__uv$config.prefix + __uv$config.encodeUrl(url)}?unique=${Date.now()}`;
-    frame.src = uniqueUrl;
-  } catch (err) {
-    error.textContent = "Failed to process the URL.";
-    errorCode.textContent = err.toString();
-    throw err;
-  }
-}
+      // Simulate typing + pressing enter in uv-address
+      function triggerUVSearch(text) {
+        searchInput.value = text;
+        const event = new KeyboardEvent("keydown", {
+          key: "Enter",
+          code: "Enter",
+          keyCode: 13,
+          which: 13,
+          bubbles: true,
+        });
+        searchInput.dispatchEvent(event);
+      }
 
-// Show suggestions in dropdown
-async function showSuggestions(e) {
-  const query = e.target.value;
-  const suggestions = await fetchSuggestions(query);
+      // Show suggestions under input
+      async function showSuggestions(e) {
+        const query = e.target.value;
+        const suggestions = await fetchSuggestions(query);
 
-  suggestionsList.innerHTML = '';
-  if (!suggestions.length) {
-    suggestionsList.style.display = 'none';
-    return;
-  }
+        suggestionsList.innerHTML = "";
+        if (!suggestions.length) {
+          suggestionsList.style.display = "none";
+          return;
+        }
 
-  suggestions.forEach(s => {
-    const li = document.createElement('li');
-    li.textContent = s;
-    li.style.cursor = 'pointer';
-    li.style.padding = '5px 10px';
-    li.addEventListener('click', async () => {
-      searchInput.value = s;
-      suggestionsList.style.display = 'none';
-      await processUrl(s); // ✅ Route through proxy
-    });
-    suggestionsList.appendChild(li);
-  });
+        suggestions.forEach((s) => {
+          const li = document.createElement("li");
+          li.textContent = s;
+          li.style.cursor = "pointer";
+          li.style.padding = "5px 10px";
+          li.addEventListener("click", () => {
+            triggerUVSearch(s); // 🔥 fires like user hit enter
+            suggestionsList.style.display = "none";
+          });
+          suggestionsList.appendChild(li);
+        });
 
-  const rect = searchInput.getBoundingClientRect();
-  suggestionsList.style.top = rect.bottom + window.scrollY + 'px';
-  suggestionsList.style.left = rect.left + window.scrollX + 'px';
-  suggestionsList.style.width = rect.width + 'px';
-  suggestionsList.style.display = 'block';
-}
+        const rect = searchInput.getBoundingClientRect();
+        suggestionsList.style.top = rect.bottom + window.scrollY + "px";
+        suggestionsList.style.left = rect.left + window.scrollX + "px";
+        suggestionsList.style.width = rect.width + "px";
+        suggestionsList.style.display = "block";
+      }
 
-// Hide suggestions when clicking outside
-document.addEventListener('click', e => {
-  if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
-    suggestionsList.style.display = 'none';
-  }
-});
+      // Hide suggestions on outside click
+      document.addEventListener("click", (e) => {
+        if (
+          !searchInput.contains(e.target) &&
+          !suggestionsList.contains(e.target)
+        ) {
+          suggestionsList.style.display = "none";
+        }
+      });
 
-searchInput.addEventListener('input', showSuggestions);
+      searchInput.addEventListener("input", showSuggestions);
     </script>
   </body>
 </html>
-
-
-
-
-
-
-
-
