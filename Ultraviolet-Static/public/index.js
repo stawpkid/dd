@@ -78,9 +78,7 @@ form.addEventListener("submit", async (event) => {
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
+
     await ensureTransportReady();
     frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
@@ -111,10 +109,6 @@ form.addEventListener("submit", async (event) => {
     frame.style.display = "block";
 
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        console.log("Transport mismatch, setting transport before manual submit...");
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
 
     console.log("Ensuring transport is ready before iframe load...");
     await ensureTransportReady();
@@ -218,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
