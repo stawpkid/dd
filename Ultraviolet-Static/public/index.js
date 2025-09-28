@@ -130,7 +130,9 @@ document.addEventListener("DOMContentLoaded", () => {
       errorCode.textContent = err.toString();
       throw err;
     }
-
+    document.querySelectorAll('.suggestions-list').forEach(el => {
+      el.style.display = 'none';
+    });
     const url = search(input.value, searchEngine.value);
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
@@ -146,3 +148,4 @@ document.addEventListener("DOMContentLoaded", () => {
     submitProxySearch();
   });
 });
+
