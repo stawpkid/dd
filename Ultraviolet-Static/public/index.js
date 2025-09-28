@@ -139,6 +139,25 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
     });
   });
 }
+async function ensureTransportReady() {
+  let ws = connection._ws;
+
+  // wait until websocket exists
+  while (!ws) {
+    await new Promise(r => setTimeout(r, 50));
+    ws = connection._ws;
+  }
+
+  // wait until websocket is open
+  while (ws.readyState !== WebSocket.OPEN) {
+    await new Promise(r => setTimeout(r, 50));
+  }
+
+  // now safe to call getTransport and setTransport
+  if (await connection.getTransport() !== "/epoxy/index.mjs") {
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+  }
+}
 
 async function submitProxySearch() {
   try {
@@ -149,32 +168,24 @@ async function submitProxySearch() {
     throw err;
   }
 
-  // hide suggestions
   document.querySelectorAll(".suggestions-list").forEach(el => el.style.display = "none");
 
   const url = search(input.value, searchEngine.value);
   let frame = document.getElementById("uv-frame");
   frame.style.display = "block";
-  let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
 
-  // ensure WebSocket is ready before sending
-  const ws = connection._ws; // internal WebSocket
-  if (ws && ws.readyState !== WebSocket.OPEN) {
-    await waitForWebSocketReady(ws);
-  }
-
-  if (await connection.getTransport() !== "/epoxy/index.mjs") {
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-  }
+  await ensureTransportReady();  // <-- wait safely before sending
 
   frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 }
+
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   submitProxySearch();
 });
 });
+
 
 
 
