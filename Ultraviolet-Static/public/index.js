@@ -26,7 +26,24 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
+async function ensureTransportReady() {
+  let ws = connection._ws;
+  // wait until websocket exists
+  while (!ws) {
+    await new Promise(r => setTimeout(r, 50));
+    ws = connection._ws;
+  }
 
+  // wait until websocket is open
+  while (ws.readyState !== WebSocket.OPEN) {
+    await new Promise(r => setTimeout(r, 50));
+  }
+
+  // now safe to call getTransport and setTransport
+  if (await connection.getTransport() !== "/epoxy/index.mjs") {
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+  }
+}
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
     const proxiedUrl = getQueryParam("url");
@@ -72,6 +89,7 @@ form.addEventListener("submit", async (event) => {
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
+    await ensureTransportReady();
     frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 });
 
@@ -82,11 +100,11 @@ window.addEventListener("load", initializeProxy);
 // Event listener for manual form submission
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    logDebug("Form submitted manually");
+    console.log("Form submitted manually");
 
     try {
         await registerSW();
-        logDebug("Service worker registered successfully");
+        console.log("Service worker registered successfully");
     } catch (err) {
         error.textContent = "Failed to register service worker.";
         errorCode.textContent = err.toString();
@@ -95,38 +113,38 @@ form.addEventListener("submit", async (event) => {
     }
 
     const url = search(address.value, searchEngine.value);
-    logDebug("Searching for URL:", url);
+    console.log("Searching for URL:", url);
 
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
 
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        logDebug("Transport mismatch, setting transport before manual submit...");
+        console.log("Transport mismatch, setting transport before manual submit...");
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
 
-    logDebug("Ensuring transport is ready before iframe load...");
+    console.log("Ensuring transport is ready before iframe load...");
     await ensureTransportReady();
 
     frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-    logDebug("Iframe src updated for manual submit:", frame.src);
+    console.log("Iframe src updated for manual submit:", frame.src);
 });
 
 window.addEventListener("load", () => {
-    logDebug("Window loaded, initializing proxy...");
+    console.log("Window loaded, initializing proxy...");
     initializeProxy().catch(err => console.error("Initialize proxy error:", err));
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    logDebug("DOM fully loaded");
+    console.log("DOM fully loaded");
     const input = document.getElementById("uv-address");
     const suggestionsList = document.getElementById("suggestions");
     const form = document.getElementById("uv-form");
     const proxySuggestionAPI = "https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=";
 
     async function fetchSuggestions(query) {
-        logDebug("Fetching suggestions for query:", query);
+        console.log("Fetching suggestions for query:", query);
         if (!query) {
             suggestionsList.innerHTML = "";
             return;
@@ -135,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let res = await fetch(proxySuggestionAPI + encodeURIComponent(query));
             let data = await res.json();
             let suggestions = data[1] || [];
-            logDebug("Fetched suggestions:", suggestions);
+            console.log("Fetched suggestions:", suggestions);
             renderSuggestions(suggestions);
         } catch (err) {
             console.error("Suggestion fetch failed:", err);
@@ -145,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderSuggestions(suggestions) {
         suggestionsList.innerHTML = "";
         if (!suggestions.length) {
-            logDebug("No suggestions to render");
+            console.log("No suggestions to render");
             return;
         }
 
@@ -153,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let li = document.createElement("li");
             li.textContent = s;
             li.addEventListener("click", () => {
-                logDebug("Suggestion clicked:", s);
+                console.log("Suggestion clicked:", s);
                 input.value = s;
                 suggestionsList.innerHTML = "";
                 submitProxySearch();
@@ -163,22 +181,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     input.addEventListener("input", () => {
-        logDebug("Input changed:", input.value);
+        console.log("Input changed:", input.value);
         fetchSuggestions(input.value);
     });
 
     input.addEventListener("blur", () => {
         setTimeout(() => {
             suggestionsList.innerHTML = "";
-            logDebug("Suggestions cleared on blur");
+            console.log("Suggestions cleared on blur");
         }, 200);
     });
 
     async function submitProxySearch() {
-        logDebug("Submitting proxy search for:", input.value);
+        console.log("Submitting proxy search for:", input.value);
         try {
             await registerSW();
-            logDebug("Service worker registered for proxy search");
+            console.log("Service worker registered for proxy search");
         } catch (err) {
             error.textContent = "Failed to register service worker.";
             errorCode.textContent = err.toString();
@@ -189,22 +207,23 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".suggestions-list").forEach(el => el.style.display = "none");
 
         const url = search(input.value, searchEngine.value);
-        logDebug("Proxy search URL:", url);
+        console.log("Proxy search URL:", url);
 
         let frame = document.getElementById("uv-frame");
         frame.style.display = "block";
 
         await ensureTransportReady();
-        logDebug("Transport ensured ready for proxy search");
+        console.log("Transport ensured ready for proxy search");
 
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-        logDebug("Iframe src updated for proxy search:", frame.src);
+        console.log("Iframe src updated for proxy search:", frame.src);
     }
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
-        logDebug("Form submitted from DOMContentLoaded event");
+        console.log("Form submitted from DOMContentLoaded event");
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
