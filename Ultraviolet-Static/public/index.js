@@ -26,16 +26,29 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
+
+
 async function ensureTransportReady() {
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
-    frame.src = "/loading.html"
+    frame.src = "/loading.html";
+
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
 
+    while (!connection._ws) {
+        await new Promise(r => setTimeout(r, 50));
+    }
+
+    while (connection._ws.readyState !== WebSocket.OPEN) {
+        await new Promise(r => setTimeout(r, 50));
+    }
+
+    console.log("[DEBUG] WebSocket is ready!");
 }
+
 
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
@@ -210,6 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
