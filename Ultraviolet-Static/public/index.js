@@ -44,33 +44,30 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
     });
   });
 }
-async function waitForWS(connection, timeout = 5000) {
-    const start = Date.now();
-    while (!connection._ws) {
-        if (Date.now() - start > timeout) throw new Error("WebSocket not initialized");
-        await new Promise(r => setTimeout(r, 50));
-    }
-    return connection._ws;
+async function waitForWS(connection, retryDelay = 50) {
+  // keep retrying indefinitely until ws exists
+  while (!connection._ws) {
+    await new Promise(r => setTimeout(r, retryDelay));
+  }
+  return connection._ws;
 }
 
-
-
 async function ensureTransportReady() {
-    const frame = document.getElementById("uv-frame");
-    frame.style.display = "block";
-    frame.src = "/loading.html";
+  const frame = document.getElementById("uv-frame");
+  frame.style.display = "block";
+  frame.src = "/loading.html";
 
-    const ws = await waitForWS(connection); // <-- use your helper, pass connection
+  const ws = await waitForWS(connection); // now will wait until _ws exists
 
-    // wait until websocket is open
-    await waitForWebSocketReady(ws);
+  // wait until websocket is open
+  await waitForWebSocketReady(ws);
 
-    // now safe to set transport
-    const transport = await connection.getTransport();
-    if (transport !== "/epoxy/index.mjs") {
-        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
+  // now safe to set transport
+  const transport = await connection.getTransport();
+  if (transport !== "/epoxy/index.mjs") {
+    const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+  }
 }
 
 // Function to set up the iframe based on query parameter
@@ -199,6 +196,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
