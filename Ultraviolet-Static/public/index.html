@@ -73,15 +73,10 @@ suggestionsList.style.display = 'none';
 suggestionsList.style.zIndex = '1000';
 
 async function fetchSuggestions(query) {
-  if (!query) return [];
-  try {
-    const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    return data[1];
-  } catch (e) {
-    console.error(e);
-    return [];
-  }
+  if (!query) return []
+  const res = await fetch(`https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=${encodeURIComponent(query)}`)
+  const data = await res.json()
+  return data[1] // array of suggestions
 }
 
 async function showSuggestions(e) {
@@ -123,6 +118,7 @@ document.addEventListener('click', e => {
     </script>
   </body>
 </html>
+
 
 
 
