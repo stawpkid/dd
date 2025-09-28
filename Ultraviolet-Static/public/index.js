@@ -143,9 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Submitting proxy search for:", input.value);
         try {
         await registerSW(); // make sure service worker is registered
-        await waitForWorker(connection); // waits for transport
-        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        await ensureBareTransport(connection, wispUrl); // sets transport if needed
+
             console.log("Service worker registered for proxy search");
         } catch (err) {
             error.textContent = "Failed to register service worker.";
@@ -161,10 +159,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let frame = document.getElementById("uv-frame");
         frame.style.display = "block";
-
-
-let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-await ensureBareTransport(connection, wispUrl);
+        let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        if (await connection.getTransport() !== "/epoxy/index.mjs") {
+            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+        }
 
         frame.src = "/loading.html";
         setTimeout(() => {
@@ -180,6 +178,7 @@ await ensureBareTransport(connection, wispUrl);
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
