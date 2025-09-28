@@ -45,6 +45,8 @@ async function initializeProxy() {
         if (await connection.getTransport() !== "/epoxy/index.mjs") {
             await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
         }
+        console.log(__uv$config.prefix + __uv$config.encodeUrl(url);)
+
         frame.src = "/loading.html";
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
@@ -83,6 +85,8 @@ form.addEventListener("submit", async (event) => {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
     frame.src = "/loading.html";
+    console.log(__uv$config.prefix + __uv$config.encodeUrl(url);)
+
     setTimeout(() => {
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
         var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
@@ -176,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
         frame.src = "/loading.html";
+        console.log(__uv$config.prefix + __uv$config.encodeUrl(url);)
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
             var _client = new Client.Anonymous('a6213f1b3c1f1f295fabf3c0abe5d9a3c8d03fabfad99b88efe1e5e0b9b2815e', {
@@ -192,6 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
