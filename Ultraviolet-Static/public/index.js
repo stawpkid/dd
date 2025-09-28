@@ -100,8 +100,10 @@ form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     try {
-        await registerSW();
-        await waitForWorker();
+        await registerSW(); // make sure service worker is registered
+        await waitForWorker(connection); // waits for transport
+        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        await ensureBareTransport(connection, wispUrl); // sets transport if needed
     } catch (err) {
         error.textContent = "Failed to register service worker.";
         errorCode.textContent = err.toString();
@@ -184,8 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
     async function submitProxySearch() {
         console.log("Submitting proxy search for:", input.value);
         try {
-            await registerSW();
-            await waitForWorker();
+        await registerSW(); // make sure service worker is registered
+        await waitForWorker(connection); // waits for transport
+        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        await ensureBareTransport(connection, wispUrl); // sets transport if needed
             console.log("Service worker registered for proxy search");
         } catch (err) {
             error.textContent = "Failed to register service worker.";
@@ -220,6 +224,7 @@ await ensureBareTransport(connection, wispUrl);
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
