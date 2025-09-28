@@ -29,16 +29,18 @@ function getQueryParam(param) {
 
 
 async function ensureTransportReady(timeout = 5000) {
-    let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    let frame = document.getElementById("uv-frame");
+    const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+    const frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     frame.src = "/loading.html";
 
+    // Set transport if needed
     if (await connection.getTransport() !== "/epoxy/index.mjs") {
         await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
     }
 
     const start = Date.now();
+    // Wait for _ws to exist
     while (!connection._ws) {
         if (Date.now() - start > timeout) {
             throw new Error("WebSocket never initialized (_ws is undefined)");
@@ -46,6 +48,7 @@ async function ensureTransportReady(timeout = 5000) {
         await new Promise(r => setTimeout(r, 50));
     }
 
+    // Wait for it to open
     while (connection._ws.readyState !== WebSocket.OPEN) {
         if (Date.now() - start > timeout) {
             throw new Error("WebSocket never opened (readyState != OPEN)");
@@ -230,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
 
 
 
