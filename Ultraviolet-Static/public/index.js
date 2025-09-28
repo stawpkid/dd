@@ -34,10 +34,15 @@ function getQueryParam(param) {
     return value;
 }
 
-async function ensureTransportReady() {
+async function ensureTransportReady(timeout = 5000) {
+    const start = Date.now();
     let ws = connection._ws;
+
     logDebug("Waiting for WebSocket existence...");
     while (!ws) {
+        if (Date.now() - start > timeout) {
+            throw new Error("WebSocket never initialized (connection._ws is null)");
+        }
         await new Promise(r => setTimeout(r, 50));
         ws = connection._ws;
     }
@@ -46,6 +51,9 @@ async function ensureTransportReady() {
     logDebug("Waiting for WebSocket to open...");
     while (ws.readyState !== WebSocket.OPEN) {
         logDebug("Current ws.readyState:", ws.readyState);
+        if (Date.now() - start > timeout) {
+            throw new Error("WebSocket stuck in non-OPEN state: " + ws.readyState);
+        }
         await new Promise(r => setTimeout(r, 50));
     }
     logDebug("WebSocket OPEN!");
@@ -215,3 +223,4 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
