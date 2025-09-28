@@ -26,42 +26,7 @@ function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
-async function waitForWebSocketReady(ws, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    if (ws.readyState === WebSocket.OPEN) return resolve();
-    
-    const timer = setTimeout(() => reject(new Error("WebSocket not ready")), timeout);
-    
-    ws.addEventListener("open", () => {
-      clearTimeout(timer);
-      resolve();
-    });
 
-    ws.addEventListener("error", (err) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-  });
-}
-async function ensureTransportReady() {
-  let ws = connection._ws;
-
-  // wait until websocket exists
-  while (!ws) {
-    await new Promise(r => setTimeout(r, 50));
-    ws = connection._ws;
-  }
-
-  // wait until websocket is open
-  while (ws.readyState !== WebSocket.OPEN) {
-    await new Promise(r => setTimeout(r, 50));
-  }
-
-  // now safe to call getTransport and setTransport
-  if (await connection.getTransport() !== "/epoxy/index.mjs") {
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
-  }
-}
 
 // Function to set up the iframe based on query parameter
 async function initializeProxy() {
@@ -121,6 +86,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("uv-form");
   const proxySuggestionAPI = "https://proxyforsug.blitzedzzontoppoihsblitzedzzontoppoihs.workers.dev/?q=";
 
+async function ensureTransportReady() {
+  let ws = connection._ws;
+
+  // wait until websocket exists
+  while (!ws) {
+    await new Promise(r => setTimeout(r, 50));
+    ws = connection._ws;
+  }
+
+  // wait until websocket is open
+  while (ws.readyState !== WebSocket.OPEN) {
+    await new Promise(r => setTimeout(r, 50));
+  }
+
+  // now safe to call getTransport and setTransport
+  if (await connection.getTransport() !== "/epoxy/index.mjs") {
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+  }
+}
   async function fetchSuggestions(query) {
     if (!query) {
       suggestionsList.innerHTML = "";
