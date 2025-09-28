@@ -53,9 +53,9 @@ async function waitForWS(connection, retryDelay = 50) {
 }
 
 async function ensureTransportReady() {
-  const frame = document.getElementById("uv-frame");
-  frame.style.display = "block";
-  frame.src = "/loading.html";
+//  const frame = document.getElementById("uv-frame");
+//  frame.style.display = "block";
+//  frame.src = "/loading.html";
 
   const ws = await waitForWS(connection); // now will wait until _ws exists
 
@@ -196,6 +196,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
