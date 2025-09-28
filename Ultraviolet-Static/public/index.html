@@ -128,19 +128,12 @@ document.addEventListener('click', e => {
     suggestionsList.style.display = 'none';
   }
 });
-// Handle form submit
-form.addEventListener("submit", async (e) => {
-  e.preventDefault(); // stop default reload
-  const query = searchInput.value.trim();
-  if (query) {
-    await processUrl(query); // ✅ route through UV proxy
-  }
-});
 
 searchInput.addEventListener('input', showSuggestions);
     </script>
   </body>
 </html>
+
 
 
 
