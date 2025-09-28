@@ -76,6 +76,20 @@ async function fetchSuggestions(query) {
     return [];
   }
 }
+async function processUrl(input) {
+  const template = searchEngine.value || "https://www.google.com/search?q=%s";
+  const url = search(input, template);
+  frame.style.display = "block";
+
+  try {
+    const uniqueUrl = `${__uv$config.prefix + __uv$config.encodeUrl(url)}?unique=${Date.now()}`;
+    frame.src = uniqueUrl;
+  } catch (err) {
+    error.textContent = "Failed to process the URL.";
+    errorCode.textContent = err.toString();
+    throw err;
+  }
+}
 
 // Show suggestions in dropdown
 async function showSuggestions(e) {
@@ -114,11 +128,20 @@ document.addEventListener('click', e => {
     suggestionsList.style.display = 'none';
   }
 });
+// Handle form submit
+form.addEventListener("submit", async (e) => {
+  e.preventDefault(); // stop default reload
+  const query = searchInput.value.trim();
+  if (query) {
+    await processUrl(query); // ✅ route through UV proxy
+  }
+});
 
 searchInput.addEventListener('input', showSuggestions);
     </script>
   </body>
 </html>
+
 
 
 
