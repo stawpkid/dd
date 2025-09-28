@@ -143,7 +143,9 @@ async function waitForWebSocketReady(ws, timeout = 5000) {
 }
 async function ensureTransportReady() {
   let ws = connection._ws;
-
+  let frame = document.getElementById("uv-frame");
+  frame.style.display = "block";
+  frame.src = "/loading.html"
   // wait until websocket exists
   while (!ws) {
     await new Promise(r => setTimeout(r, 50));
@@ -187,6 +189,7 @@ form.addEventListener("submit", (event) => {
   submitProxySearch();
 });
 });
+
 
 
 
