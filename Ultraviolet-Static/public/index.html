@@ -35,16 +35,18 @@
       <p>Made by blitzedzz</p>
     </div>
 
-    <form id="uv-form" class="flex-center">
-      <input
-        id="uv-search-engine"
-        value="https://www.google.com/search?q=%s"
-        type="hidden"
-        autocomplete="off"
-      />
-      <input id="uv-address" type="text" placeholder="Search the web freely" />
-      <ul id="suggestions" class="suggestions-list"></ul>
-    </form>
+<form id="uv-form" class="flex-center">
+  <div class="input-wrapper">
+    <input
+      id="uv-search-engine"
+      value="https://www.google.com/search?q=%s"
+      type="hidden"
+    />
+    <input id="uv-address" type="text" placeholder="Search the web freely" autocomplete="off" />
+    <ul id="suggestions" class="suggestions-list"></ul>
+  </div>
+</form>
+
     <div class="desc left-margin">
       <p id="uv-error"></p>
       <pre id="uv-error-code"></pre>
@@ -60,5 +62,6 @@
    
   </body>
 </html>
+
 
 
