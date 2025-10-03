@@ -66,9 +66,9 @@ async function initializeProxy() {
 
     try {
         let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        await ensureTransportReady(wispUrl);
-
         frame.src = "/loading.html";
+        await ensureTransportReady(wispUrl);
+        
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
         }, 2000);
@@ -96,10 +96,9 @@ form.addEventListener("submit", async (event) => {
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-
+    frame.src = "/loading.html";
     await ensureTransportReady(wispUrl);
 
-    frame.src = "/loading.html";
     setTimeout(() => {
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
     }, 2000);
@@ -184,10 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let frame = document.getElementById("uv-frame");
         frame.style.display = "block";
         let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-
-        await ensureTransportReady(wispUrl);
-
         frame.src = "/loading.html";
+        await ensureTransportReady(wispUrl);
         setTimeout(() => {
             frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
         }, 2000);
@@ -200,3 +197,4 @@ document.addEventListener("DOMContentLoaded", () => {
         submitProxySearch().catch(err => console.error("Proxy search submit error:", err));
     });
 });
+
