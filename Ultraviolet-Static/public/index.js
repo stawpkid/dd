@@ -19,12 +19,37 @@ const error = document.getElementById("uv-error");
  * @type {HTMLPreElement}
  */
 const errorCode = document.getElementById("uv-error-code");
+
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 
 // Helper to get query parameters
 function getQueryParam(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
+}
+
+async function ensureTransportReady(wispUrl) {
+    if (await connection.getTransport() !== "/epoxy/index.mjs") {
+        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+    }
+
+    // Wait for socket to be OPEN
+    return new Promise((resolve, reject) => {
+        let tries = 0;
+        const maxTries = 30; // ~3s total wait if interval=100ms
+
+        function check() {
+            const ws = connection.transport?.ws;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                resolve();
+            } else if (tries++ > maxTries) {
+                reject(new Error("Transport socket failed to open in time"));
+            } else {
+                setTimeout(check, 100);
+            }
+        }
+        check();
+    });
 }
 
 // Function to set up the iframe based on query parameter
@@ -41,10 +66,12 @@ async function initializeProxy() {
 
     try {
         let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        if (await connection.getTransport() !== "/epoxy/index.mjs") {
-            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-        }
-        frame.src = __uv$config.prefix + __uv$config.encodeUrl(proxiedUrl);
+        await ensureTransportReady(wispUrl);
+
+        frame.src = "/loading.html";
+        setTimeout(() => {
+            frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+        }, 2000);
     } catch (err) {
         error.textContent = "Failed to initialize proxy.";
         errorCode.textContent = err.toString();
@@ -69,9 +96,9 @@ form.addEventListener("submit", async (event) => {
     let frame = document.getElementById("uv-frame");
     frame.style.display = "block";
     let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-    if (await connection.getTransport() !== "/epoxy/index.mjs") {
-        await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-    }
+
+    await ensureTransportReady(wispUrl);
+
     frame.src = "/loading.html";
     setTimeout(() => {
         frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
@@ -80,7 +107,7 @@ form.addEventListener("submit", async (event) => {
 
 // Initialize proxy on page load if a URL is provided in the query
 window.addEventListener("load", initializeProxy);
-window.addEventListener("load", initializeProxy);
+
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded");
     const input = document.getElementById("uv-address");
@@ -157,9 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let frame = document.getElementById("uv-frame");
         frame.style.display = "block";
         let wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-        if (await connection.getTransport() !== "/epoxy/index.mjs") {
-            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
-        }
+
+        await ensureTransportReady(wispUrl);
 
         frame.src = "/loading.html";
         setTimeout(() => {
